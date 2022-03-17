@@ -1,0 +1,168 @@
+# create database artsydb;
+use artsydb;
+
+Artists:
+========
+artistname
+nationality
+birthdate
+deathdate
+profileurl
+about
+
+create table artists (id int auto_increment primary key, artistname varchar(255), nationality varchar(255), birthdate char(10), deathdate char(10), about text, profileurl text, inserted datetime NOT NULL, edited datetime NOT NULL);
+
+alter table artists add column gender char(10);
+alter table artists add column slug varchar(255);
+alter table artists add column squareimage text;
+alter table artists add column edges text;
+alter table artists add column largeimage text;
+
+alter table artists modify column birthdate varchar(30);
+
+
+Galleries:
+==========
+galleryname
+location
+description
+galleryurl
+website
+
+create table galleries (id int auto_increment primary key, galleryname text, location varchar(255), description text, galleryurl text, website text, inserted datetime NOT NULL, edited datetime NOT NULL);
+
+
+Galleries/Events:
+-----------------
+eventname
+eventstartdate
+eventenddate
+eventtype (show, fair booth, exhibition, auction, charity, etc)
+eventstatus (upcoming, open, closed)
+gallery (Galleries record foreign key, this is the gallery that "presents" the event)
+eventinfo ("about" information)
+artworkscount
+eventurl
+
+create table events (id int auto_increment primary key, eventstartdate datetime, eventenddate datetime, eventtype char(20), eventstatus char(15), gallery_id int not null, eventinfo text, artworkscount int default -1, eventurl text, inserted datetime NOT NULL, edited datetime NOT NULL, foreign key (gallery_id) references galleries(id));
+
+
+Galleries/Events/Artworks and Galleries/Works:
+----------------------------------------------
+artworkname
+creationdate
+gallery (foreign key from galleries)
+artistname
+artistbirthyear
+artistdeathyear
+artistnationality
+size
+estimate
+soldprice
+medium
+event (foreign key from Events)
+signature
+letterofauthenticity
+description
+provenance
+literature
+image1
+image2
+image3
+image4
+workurl
+
+create table artworks (id int auto_increment primary key, artworkname text, creationdate char(10), gallery_id int, artistname varchar(255), artistbirthyear char(4), artistdeathyear char(4), artistnationality varchar(200), size varchar(255), estimate varchar(100), soldprice varchar(40), medium text, event_id int, signature text, letterofauthenticity text, description text, provenance text, literature text, image1 text, image2 text, image3 text, image4 text, workurk text, inserted datetime NOT NULL, edited datetime NOT NULL, foreign key (gallery_id) references galleries(id), foreign key (event_id) references events(id));
+
+alter table artworks add column exhibitions text;
+
+
+
+Galleries/Viewing Rooms:
+------------------------
+roomname
+period
+artist (foreign key from Artists)
+gallery (foreign key from Galleries)
+roomstatus (open, closed)
+description
+roomurl
+
+create table viewingrooms (id int auto_increment primary key, roomname varchar(255), period varchar(150), artist_id int, gallery_id int, roomstatus char(10), description text, roomurl text, edited datetime NOT NULL, inserted datetime NOT NULL, foreign key (artist_id) references artists(id), foreign key (gallery_id) references galleries(id));
+
+
+Museums:
+========
+museumname
+location
+description
+museumurl
+
+create table museums (id int auto_increment primary key, museumname text, location varchar(200), description text, museumurl text, edited datetime NOT NULL, inserted datetime NOT NULL);
+
+
+Museums/MuseumEvents:
+---------------------
+eventname
+museum (foreign key from Museums)
+eventperiod
+eventstatus (open, closed)
+presenter
+
+
+create table museumevents (id int auto_increment primary key, eventname text, museum_id int, eventperiod varchar (255), eventstatus char(20), presenter varchar(255), edited datetime NOT NULL, inserted datetime NOT NULL, foreign key (museum_id) references museums(id));
+
+Museums/Works:
+--------------
+piecename
+creationdate
+museum (foreign key from Museums)
+artistname
+artistbirthyear
+artistdeathyear
+artistnationality
+medium
+size
+edition
+signature
+description
+detailurl
+provenance
+literature
+exhibited
+status (displayed, stored, etc)
+image1
+image2
+image3
+image4
+
+create table museumpieces (id int auto_increment primary key, piecename text, creationdate char(10), museum_id int, artistname varchar(255), artistbirthyear char(4), artistdeathyear char(4), artistnationality varchar(200), medium text, size varchar(255), edition varchar(255), signature text, description text, detailurl text, provenance text, literature text, exhibited text, status char(40), image1 text, image2 text, image3 text, image4 text, edited datetime NOT NULL, inserted datetime NOT NULL, foreign key (museum_id) references museums(id));
+
+Museums/Articles:
+-----------------
+articlename
+author
+postdatetime
+museum (foreign key from Museums)
+aticleurl
+aboutauthor
+articlecontent
+articleimage1
+articleimage2
+articleimage3
+articleimage4
+articleimage5
+
+create table articles (id int auto_increment primary key, author varchar(255) not null, postdatetime datetime, museum_id int, articleurl text, aboutauthor text, articlecontent text, articleimage1 text, articleimage2 text, articleimage3 text, articleimage4 text, articleimage5 text, edited datetime NOT NULL, inserted datetime NOT NULL, foreign key (museum_id) references museums(id));
+
+
+CREATE USER 'artsyuser'@'localhost' IDENTIFIED BY 'artsypasswd';
+GRANT ALL PRIVILEGES ON * . * TO 'artsyuser'@'localhost';
+FLUSH PRIVILEGES;
+
+
+
+Questions:
+1. Do we need to store the article content somewhere locally? (yes, for now)
+2. Do we need the images of the artworks/pieces to be stored locally? (yes)
+

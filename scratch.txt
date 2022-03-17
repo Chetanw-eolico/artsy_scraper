@@ -1,0 +1,137 @@
+`https://start.spring.io/
+
+https://dzone.com/articles/creating-a-spring-boot-project-with-eclipse-and-ma
+https://spring.io/guides/gs/spring-boot/#scratch
+https://spring.io/projects/spring-boot
+https://spring.io/tools
+
+{"id":"PartnersRailsQuery","query":"query PartnersRailsQuery(\n  $categoryType: PartnerCategoryType\n) {\n  viewer {\n    ...PartnersRails_viewer_1Wcb23\n  }\n}\n\nfragment PartnersRails_viewer_1Wcb23 on Viewer {\n  partnerCategories(categoryType: $categoryType, size: 50, internal: false) {\n    name\n    slug\n    id\n  }\n}\n","variables":{"categoryType":"GALLERY","type":"GALLERY"}}
+
+
+curl 'https://metaphysics-production.artsy.net/v2' \
+  -H 'authority: metaphysics-production.artsy.net' \
+  -H 'pragma: no-cache' \
+  -H 'cache-control: no-cache' \
+  -H 'accept: */*' \
+  -H 'x-timezone: Asia/Calcutta' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36' \
+  -H 'content-type: application/json' \
+  -H 'origin: https://www.artsy.net' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'referer: https://www.artsy.net/' \
+  -H 'accept-language: en-GB,en-US;q=0.9,en;q=0.8' \
+  --data-binary '{"id":"PartnersRailsQuery","query":"query PartnersRailsQuery(\n  $categoryType: PartnerCategoryType\n) {\n  viewer {\n    ...PartnersRails_viewer_1Wcb23\n  }\n}\n\nfragment PartnersRails_viewer_1Wcb23 on Viewer {\n  partnerCategories(categoryType: $categoryType, size: 50, internal: false) {\n    name\n    slug\n    id\n  }\n}\n","variables":{"categoryType":"GALLERY","type":"GALLERY"}}' \
+  --compressed
+
+--------------------------------------------------------------------------------------------------------------------
+
+curl -N 'https://metaphysics-production.artsy.net/v2' \
+  -H 'authority: metaphysics-production.artsy.net' \
+  -H 'pragma: no-cache' \
+  -H 'cache-control: no-cache' \
+  -H 'accept: */*' \
+  -H 'x-timezone: Asia/Calcutta' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36' \
+  -H 'content-type: application/json' \
+  -H 'origin: https://www.artsy.net' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'referer: https://www.artsy.net/' \
+  -H 'accept-language: en-GB,en-US;q=0.9,en;q=0.8' \
+  --data-binary '{"id":"PartnersRailQuery","query":"query PartnersRailQuery(\n  $id: String!\n  $category: [String]\n  $type: [PartnerClassification!]!\n) {\n  partnerCategory(id: $id) {\n    ...PartnersRail_partnerCategory_43V8rY\n    id\n  }\n}\n\nfragment FollowProfileButton_profile on Profile {\n  id\n  slug\n  name\n  internalID\n  is_followed: isFollowed\n}\n\nfragment PartnerCell_partner on Partner {\n  internalID\n  slug\n  name\n  href\n  initials\n  locationsConnection(first: 15) {\n    edges {\n      node {\n        city\n        id\n      }\n    }\n  }\n  profile {\n    ...FollowProfileButton_profile\n    isFollowed\n    image {\n      cropped(width: 445, height: 334, version: [\"wide\", \"large\", \"featured\", \"larger\"]) {\n        src\n        srcSet\n      }\n    }\n    id\n  }\n}\n\nfragment PartnersRail_partnerCategory_43V8rY on PartnerCategory {\n  name\n  primary: partners(defaultProfilePublic: true, eligibleForListing: true, eligibleForPrimaryBucket: true, partnerCategories: $category, sort: RANDOM_SCORE_DESC, type: $type) {\n    internalID\n    ...PartnerCell_partner\n    id\n  }\n  secondary: partners(eligibleForListing: true, eligibleForSecondaryBucket: true, type: $type, partnerCategories: $category, sort: RANDOM_SCORE_DESC, defaultProfilePublic: true) {\n    internalID\n    ...PartnerCell_partner\n    id\n  }\n}\n","variables":{"id":"emerging-art","category":"GALLERY","type":"GALLERY"}}' \
+  --compressed
+
+
+
+{"id":"PartnersRailQuery","query":"query PartnersRailQuery(\n  $id: String!\n  $category: [String]\n  $type: [PartnerClassification!]!\n) {\n  partnerCategory(id: $id) {\n    ...PartnersRail_partnerCategory_43V8rY\n    id\n  }\n}\n\nfragment FollowProfileButton_profile on Profile {\n  id\n  slug\n  name\n  internalID\n  is_followed: isFollowed\n}\n\nfragment PartnerCell_partner on Partner {\n  internalID\n  slug\n  name\n  href\n  initials\n  locationsConnection(first: 15) {\n    edges {\n      node {\n        city\n        id\n      }\n    }\n  }\n  profile {\n    ...FollowProfileButton_profile\n    isFollowed\n    image {\n      cropped(width: 445, height: 334, version: [\"wide\", \"large\", \"featured\", \"larger\"]) {\n        src\n        srcSet\n      }\n    }\n    id\n  }\n}\n\nfragment PartnersRail_partnerCategory_43V8rY on PartnerCategory {\n  name\n  primary: partners(defaultProfilePublic: true, eligibleForListing: true, eligibleForPrimaryBucket: true, partnerCategories: $category, sort: RANDOM_SCORE_DESC, type: $type) {\n    internalID\n    ...PartnerCell_partner\n    id\n  }\n  secondary: partners(eligibleForListing: true, eligibleForSecondaryBucket: true, type: $type, partnerCategories: $category, sort: RANDOM_SCORE_DESC, defaultProfilePublic: true) {\n    internalID\n    ...PartnerCell_partner\n    id\n  }\n}\n","variables":{"id":"mid-career","category":"GALLERY","type":"GALLERY"}}
+
+
+
+r = os.system("curl 'https://metaphysics-production.artsy.net/v2' \
+  -H 'authority: metaphysics-production.artsy.net' \
+  -H 'pragma: no-cache' \
+  -H 'cache-control: no-cache' \
+  -H 'accept: */*' \
+  -H 'x-timezone: Asia/Calcutta' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36' \
+  -H 'content-type: application/json' \
+  -H 'origin: https://www.artsy.net' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'referer: https://www.artsy.net/' \
+  -H 'accept-language: en-GB,en-US;q=0.9,en;q=0.8' \
+  --data-binary '{\"id\":\"PartnersRailsQuery\",\"query\":\"query PartnersRailsQuery(\n  $categoryType: PartnerCategoryType\n) {\n  viewer {\n    ...PartnersRails_viewer_1Wcb23\n  }\n}\n\nfragment PartnersRails_viewer_1Wcb23 on Viewer {\n  partnerCategories(categoryType: $categoryType, size: 50, internal: false) {\n    name\n    slug\n    id\n  }\n}\n\",\"variables\":{\"categoryType\":\"GALLERY\",\"type\":\"GALLERY\"}}' \
+  --compressed")
+
+data/partner/profile/fullBio
+
+
+curl 'https://metaphysics-production.artsy.net/v2' \
+  -H 'authority: metaphysics-production.artsy.net' \
+  -H 'pragma: no-cache' \
+  -H 'cache-control: no-cache' \
+  -H 'accept: */*' \
+  -H 'x-timezone: Asia/Calcutta' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36' \
+  -H 'content-type: application/json' \
+  -H 'origin: https://www.artsy.net' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'referer: https://www.artsy.net/' \
+  -H 'accept-language: en-GB,en-US;q=0.9,en;q=0.8' \
+  --data-binary $'{"id":"partnerRoutes_OverviewQuery","query":"query partnerRoutes_OverviewQuery(\\n  $partnerId: String\u0021\\n) {\\n  partner(id: $partnerId) @principalField {\\n    ...Overview_partner\\n    id\\n  }\\n}\\n\\nfragment AboutPartner_partner on Partner {\\n  profile {\\n    fullBio\\n    bio\\n    id\\n  }\\n  website\\n  vatNumber\\n  displayFullPartnerPage\\n}\\n\\nfragment ArticleCard_article on Article {\\n  channelID\\n  thumbnailTitle\\n  href\\n  author {\\n    name\\n    id\\n  }\\n  contributingAuthors {\\n    name\\n    id\\n  }\\n  thumbnailImage {\\n    medium: cropped(width: 400, height: 300) {\\n      width\\n      height\\n      src\\n      srcSet\\n    }\\n  }\\n}\\n\\nfragment ArticlesRail_partner on Partner {\\n  slug\\n  articlesConnection(first: 8) {\\n    totalCount\\n    edges {\\n      node {\\n        internalID\\n        ...ArticleCard_article\\n        id\\n      }\\n    }\\n  }\\n}\\n\\nfragment ArtistsRail_partner on Partner {\\n  slug\\n  profileArtistsLayout\\n  displayFullPartnerPage\\n  artistsWithPublishedArtworks: artistsConnection(hasPublishedArtworks: true, displayOnPartnerProfile: true) {\\n    totalCount\\n  }\\n  representedArtistsWithoutPublishedArtworks: artistsConnection(representedBy: true, hasPublishedArtworks: false, displayOnPartnerProfile: true) {\\n    totalCount\\n  }\\n}\\n\\nfragment Overview_partner on Partner {\\n  slug\\n  partnerType\\n  displayFullPartnerPage\\n  profileBannerDisplay\\n  displayArtistsSection\\n  ...AboutPartner_partner\\n  ...ShowsRail_partner\\n  ...ArtistsRail_partner\\n  ...SubscriberBanner_partner\\n  ...ArticlesRail_partner\\n  locationsConnection(first: 1) {\\n    edges {\\n      node {\\n        city\\n        coordinates {\\n          lat\\n          lng\\n        }\\n        id\\n      }\\n    }\\n  }\\n}\\n\\nfragment ShowCard_show on Show {\\n  href\\n  name\\n  isFairBooth\\n  exhibitionPeriod\\n  coverImage {\\n    medium: cropped(width: 320, height: 240) {\\n      width\\n      height\\n      src\\n      srcSet\\n    }\\n  }\\n}\\n\\nfragment ShowsRail_partner on Partner {\\n  slug\\n  displayFullPartnerPage\\n  showsConnection(status: ALL, first: 20, isDisplayable: true) {\\n    totalCount\\n    edges {\\n      node {\\n        id\\n        ...ShowCard_show\\n      }\\n    }\\n  }\\n}\\n\\nfragment SubscriberBanner_partner on Partner {\\n  hasFairPartnership\\n  name\\n}\\n","variables":{"partnerId":"david-gill-gallery"}}' \
+  --compressed
+
+SELECT 'ID', 'GALLERYNAME', 'LOCATION', 'DESCRIPTION', 'GALLERYURL', 'WEBSITE', 'INSERTED', 'EDITED', 'SLUG', 'COVERIMAGE' 
+UNION ALL
+SELECT ID, GALLERYNAME, LOCATION, DESCRIPTION, GALLERYURL, WEBSITE, INSERTED, EDITED, SLUG, COVERIMAGE 
+FROM galleries
+WHERE 1
+INTO OUTFILE '/var/lib/mysql-files/galleries.csv'
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n';
+
+SELECT 'ID', 'EVENTNAME', 'EVENTTYPE', 'EVENTSTATUS', 'GALLERY_ID', 'EVENTINFO', 'ARTWORKSCOUNT', 'EVENTURL', 'EVENTPERIOD', 'INSERTED', 'EDITED'
+UNION ALL
+SELECT ID, EVENTNAME, EVENTTYPE, EVENTSTATUS, GALLERY_ID, EVENTINFO, ARTWORKSCOUNT, EVENTURL, EVENTPERIOD, INSERTED, EDITED
+FROM events
+WHERE 1
+INTO OUTFILE '/var/lib/mysql-files/events.csv'
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n';
+
+
+{"data":{"viewer":{"artistsConnection":
+"pageCursors":{"around":[{"cursor":"YXJyYXljb25uZWN0aW9uOi0x","page":1,"isCurrent":true},{
+"artists":[{"artist":{"internalID":"540a0d02726169771e530100","name":"A 5533 Project by Nancy  Atakan and Volkan Aslan","href":"/artist/a-5533-project-by-nancy-atakan-and-volkan-aslan","id":"QXJ0aXN0OjU0MGEwZDAyNzI2MTY5NzcxZTUzMDEwMA=="}},{"artist":{"in
+
+['data']['artist']
+['slug']
+['nationality']
+['birthday']
+['deathday']
+['gender']
+['href']
+['image']['large']
+['image']['square']
+['artworks_connection']['edges'] (= [])
+
+QXJ0aXN0OjVhOWYwZDNjNzYyMmRkNTdhMThlNDI1OQ==
+
+
+
+
+
+
+
+
+
+
+

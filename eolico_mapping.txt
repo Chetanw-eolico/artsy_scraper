@@ -1,0 +1,206 @@
+Hi Supriyo, to connect The Eolico website from FTP, here are the details:
+
+I.P: 182.50.146.128
+Username: artbnk
+Password: WelcomArt12#
+
+Created the directory with your name. Please use /wp-content/uploads/Supriyo for file uploads.
+
+Filename upload pattern will be -
+
+/wp-content/uploads/Supriyo/<auction-house-name>/<sale-number>/lot-number-a.jpeg
+/wp-content/uploads/Supriyo/<auction-house-name>/<sale-number>/lot-number-b.jpeg
+
+and so on. For example you have to upload a file for Bonhams auction house, Sale no. 123 and first image of lot# 1. Then you will create a directory named Bonhams inside Supriyo and the inside Bonhams create a directory for sale 123 and here you may upload your images. For example - 
+
+/wp-content/uploads/Supriyo/Bonhams/123/1-a.jpeg
+/wp-content/uploads/Supriyo/Bonhams/123/1-b.jpeg
+/wp-content/uploads/Supriyo/Bonhams/123/2-a.jpeg
+/wp-content/uploads/Supriyo/Bonhams/123/2-b.jpeg
+
+These uploaded images can then be accessed from any browser by opening the links this way - 
+
+https://theeolico.com/wp-content/uploads/Supriyo/Bonhams/123/1-a.jpeg
+https://theeolico.com/wp-content/uploads/Supriyo/Bonhams/123/1-b.jpeg
+
+and so on. I hope this is clear now.
+
+https://linuxize.com/post/how-to-use-linux-ftp-command-to-transfer-files/
+https://docs.oracle.com/cd/E19120-01/open.solaris/819-1634/remotehowtoaccess-60496/index.html
+https://www.artcurial.com/fr/vente-a3907-un-printemps-marocain
+https://docs.google.com/spreadsheets/d/1g73Ai9gLNa74SVsu2osq9QKr2LZTUBYr/edit#gid=1559805090
+
+https://docs.google.com/spreadsheets/d/1g73Ai9gLNa74SVsu2osq9QKr2LZTUBYr/edit#gid=1559805090
+
+
+FTP server: 184.168.96.0
+FTP Username: artbnk@theeolico.com
+Password: WelcomArt12#
+FTP & explicit FTPS port:  21
+
+https://unix.stackexchange.com/questions/440803/remmina-cant-remote-into-windows-server
+https://stackoverflow.com/questions/59801387/how-to-install-mod-wsgi-into-apache-on-windows
+
+correct place - /Artcurial/images/4093
+1. Hindman
+https://hindmanauctions.com/auctions/953-photography
+
+2. Swann
+https://www.swanngalleries.com/departments/american-art
+
+
+
+===========================================================
+https://github.com/Chetanw-eolico/Scraper-Codex
+------------------------------------------------
+echo "# Scraper-Codex" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/Chetanw-eolico/Scraper-Codex.git
+git push -u origin main
+===========================================================
+https://sso.godaddy.com/login?app=email&realm=pass
+supriyom@theeolico.com
+Eolico#1234
+
+===========================================================
+GoDaddy Dedicated Server Info:
+Go Daddy Admin	https://in.godaddy.com/	
+chetanw2782@gmail.com  / Eolico@2021
+
+Customer number
+358490127
+
+Pin Number 1507
+
+https://www.a2hosting.com/vps-hosting/unmanaged
+theeolico@gmail.com/Eolico#1234  <-- This is the login to a2hosting server
+
+theeolico@gmail.com/welcome12#
+========================================================
+SSH Port 7822
+Hostname
+(SSH/POP/IMAP)theeolico.com
+SSH Username: root
+Default SSH Password: 215528ad9bee6a4f
+IP Address: 216.137.189.57
+Nameservers: Check with the domain registrar
+Webuzo User: (no value)
+Webuzo Password: (no value)
+Script: None
+Admin Username: (no value)
+
+yum –y install openssh-server openssh-clients
+
+Your Order Number is: 6660384454
+
+68625021
+
+
+theeolico@gmail.com	Eolico#1234
+
+theeolico@gmail.com	welcome12#
+
+27AAGCE3580L1ZA
+
+LOGIN SCREEN:
+https://my.a2hosting.com/clientarea.php?action=productdetails&id=464934
+
+I will be more than happy to help you with your inquiry. So you should use 216.137.189.57 as SSH host. The following help article will show you how more information on how to use SSH in order to connect:
+
+7822
+
+1) Log into my.a2hosting.com.
+2) Navigate to Services -> My Services in the menu bar.
+3) Click the Manage button next to your VPS.
+4) Click the "additional information" tab below the basic details that appear.
+5) Click the eye icon next to "ssh password" to display the password.
+
+root/215528ad9bee6a4f
+
+ssh root@216.137.189.57 -p 7822
+
+scp -P 7822 artbank.tar.xz root@216.137.189.57:/root/artwork
+
+https://www.a2hosting.com/kb/getting-started-guide/accessing-your-account/using-ssh-secure-shell
+
+
+YJXyvyCJu2?t
+MySQL root password: Passw0rd@12
+
+==================================================================================
+Nginx-uwsgi-django app configuration: https://uwsgi-docs.readthedocs.io/en/latest/tutorials/Django_and_nginx.html
+
+Google Analytics: https://analytics.google.com/analytics/web/provision/?authuser=0#/a202077334p279102749/admin
+
+JSON VIewer: http://jsonviewer.stack.hu/
+
+Scraping:
+FTP server: 184.168.96.0
+FTP Username: scraping@theeolico.com
+Password: Eolico12#
+FTP & explicit FTPS port:  21
+
+Auction House:
+FTP server: 184.168.96.0
+FTP Username: auctionhouse@theeolico.com
+Password: Auction1234#
+FTP & explicit FTPS port:  21
+
+EolicoArt12#
+=========================================================
+Scraping Folder:
+FTP server: 184.168.96.0
+FTP Username: scrapingfolder@theeolico.com
+Password: jxb?y#qRK5$~
+FTP & explicit FTPS port:  21
+
+Auction House:
+FTP server: 184.168.96.0
+FTP Username: auctionhouse@theeolico.com
+Password: Auction1234#
+FTP & explicit FTPS port:  21
+========================================================
+
+artadmin/WelcomeArt12#
+
+
+contact@theeolico.com
+Eolico1234#
+
+
+
+meet.google.com/obq-qxwe-czv
+=========================================================
+
+Indeed Link: https://employers.indeed.com/c#candidates?id=041bc72f9af3&p=3&sort=relevance&order=desc&statusName=Rejected
+
+=========================================================
+Google Drive - Client Area:
+https://drive.google.com/drive/folders/1jHO-1FadKRn-wAPyhpdmahgXt12A8lQ2
+
+=========================================================
+Github access token for Eolico work:   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
+https://github.com/Chetanw-eolico/Scraper-Codex.git
+git push https://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@github.com/Chetanw-eolico/Scraper-Codex.git
+git push https://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@github.com/supmit13/testyard.git
+
+git push https://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@github.com/supmit13/datalib.git HEAD:main
+git push https://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@github.com/supmit13/datalib.git master
+
+
+CREATE USER 'eolicouser'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON *.* TO 'eolicouser'@'localhost';
+FLUSH PRIVILEGES;
+
+MonsterIndia Username: xopr_The_Eolicinx01
+MonsterIndia Password: xopbf8dppbv
+
+Alternate Format Scrapers Status Sheet: 
+https://docs.google.com/spreadsheets/d/1g73Ai9gLNa74SVsu2osq9QKr2LZTUBYr/edit#gid=1715868125
+
+
+
+

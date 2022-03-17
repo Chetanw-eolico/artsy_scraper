@@ -1,0 +1,16 @@
+curl 'https://metaphysics-production.artsy.net/v2' \
+  -H 'authority: metaphysics-production.artsy.net' \
+  -H 'pragma: no-cache' \
+  -H 'cache-control: no-cache' \
+  -H 'accept: */*' \
+  -H 'x-timezone: Asia/Calcutta' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36' \
+  -H 'content-type: application/json' \
+  -H 'origin: https://www.artsy.net' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'referer: https://www.artsy.net/' \
+  -H 'accept-language: en-GB,en-US;q=0.9,en;q=0.8' \
+  --data-binary '{"id":"PartnersRailsQuery","query":"query PartnersRailsQuery(\n  $categoryType: PartnerCategoryType\n) {\n  viewer {\n    ...PartnersRails_viewer_1Wcb23\n  }\n}\n\nfragment PartnersRails_viewer_1Wcb23 on Viewer {\n  partnerCategories(categoryType: $categoryType, size: 50, internal: false) {\n    name\n    slug\n    id\n  }\n}\n","variables":{"categoryType":"GALLERY","type":"GALLERY"}}' \
+  --compressed

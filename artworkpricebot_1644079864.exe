@@ -1,0 +1,16 @@
+curl 'https://metaphysics-production.artsy.net/v2' \
+  -H 'authority: metaphysics-production.artsy.net' \
+  -H 'pragma: no-cache' \
+  -H 'cache-control: no-cache' \
+  -H 'accept: */*' \
+  -H 'x-timezone: Asia/Calcutta' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36' \
+  -H 'content-type: application/json' \
+  -H 'origin: https://www.artsy.net' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'referer: https://www.artsy.net/' \
+  -H 'accept-language: en-GB,en-US;q=0.9,en;q=0.8' \
+  --data-binary $'{"id":"PricingContextQuery","query":"query PricingContextQuery(\\n  $slug: String\u0021\\n) {\\n  artwork(id: $slug) {\\n    ...PricingContext_artwork\\n    id\\n  }\\n}\\n\\nfragment PricingContext_artwork on Artwork {\\n  listPrice {\\n    __typename\\n    ... on PriceRange {\\n      maxPrice {\\n        minor\\n      }\\n      minPrice {\\n        minor\\n      }\\n    }\\n    ... on Money {\\n      minor\\n    }\\n  }\\n  artists {\\n    slug\\n    id\\n  }\\n  category\\n  pricingContext {\\n    appliedFiltersDisplay\\n    appliedFilters {\\n      dimension\\n      category\\n    }\\n    bins {\\n      maxPrice\\n      maxPriceCents\\n      minPrice\\n      minPriceCents\\n      numArtworks\\n    }\\n  }\\n}\\n","variables":{"slug":"frantisek-drtikol-nude-study-3"}}' \
+  --compressed

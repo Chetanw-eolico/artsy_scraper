@@ -1,0 +1,31 @@
+Primary Requirements:
+-----------------------
+
+1. Artists can create a profile and upload their artwork, and this should have various privacy options that would allow some or all users to view them.
+
+2a. Artists can pay a fee and allow their artwork to be displayed on priority basis for a fixed period of time. The time for which the artwork(s) would be viewable on priority basis would depend on the financial amount that the artist(s) have paid. 
+2b. A selection of the artwork(s) displayed on priority basis would be viewable on the carousel widget. This would be a javascript based app that displays the artwork(s) automatically for a fixed period of time (let's say 3 seconds, though this should be changeable from the admin section.
+
+3. Artists should be able to perform certain social networking activities from the application. For example, an artist should be able to post some artwork or a statistic (like number of "views" or "likes" of his/her artwork on the website) on social networking media such as Facebook or Instagram. (For a start, we would support Facebook, Instagram and Unsplash. We may support other sites as we go.)
+
+4. The data (art images) displayed on the website would require a change of "imagepath" variable in every existing scraper. This should be done before the site goes public, so that the client(s) do not face any break in service.
+
+5. The site should have space on top (leaderboard) and right side for advert placement. The dimensions for website adverts should be fixed prior to starting work.
+
+6. Since this site would be viewable from mobile phone browsers, it should be responsive to screen dimensions. This should be implemented using MediaQueries.
+==================================================================================================
+
+Features in the website
+1.	Microsites for galleries, auction houses and museums.
+2.	Carousel with 7 slides, 1 for each day, this should be featuring events from paid or top venues only.
+3.	Comprehensive list of galleries, museums and auction houses.
+4.	Design offering.
+5.	Social media offering.
+6.	Content offering.
+7.	Events/News.
+8.	1” Header and right side vertical 1” for advertisements, will do footer later but have the option created.
+
+
+Carousel
+Price Database   Auctions   Auction Houses   Galleries   Museums   Microsites   Events/News  Artists   Special Offers & Pricing Plans
+
