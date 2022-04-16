@@ -1,0 +1,16 @@
+curl -N 'https://metaphysics-production.artsy.net/v2' \
+  -H 'authority: metaphysics-production.artsy.net' \
+  -H 'pragma: no-cache' \
+  -H 'cache-control: no-cache' \
+  -H 'accept: */*' \
+  -H 'x-timezone: Asia/Calcutta' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36' \
+  -H 'content-type: application/json' \
+  -H 'origin: https://www.artsy.net' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'referer: https://www.artsy.net/' \
+  -H 'accept-language: en-GB,en-US;q=0.9,en;q=0.8' \
+  --data-binary '{"id":"PartnersRailQuery","query":"query PartnersRailQuery(\n  $id: String!\n  $category: [String]\n  $type: [PartnerClassification!]!\n) {\n  partnerCategory(id: $id) {\n    ...PartnersRail_partnerCategory_43V8rY\n    id\n  }\n}\n\nfragment FollowProfileButton_profile on Profile {\n  id\n  slug\n  name\n  internalID\n  is_followed: isFollowed\n}\n\nfragment PartnerCell_partner on Partner {\n  internalID\n  slug\n  name\n  href\n  initials\n  locationsConnection(first: 15) {\n    edges {\n      node {\n        city\n        id\n      }\n    }\n  }\n  profile {\n    ...FollowProfileButton_profile\n    isFollowed\n    image {\n      cropped(width: 445, height: 334, version: [\"wide\", \"large\", \"featured\", \"larger\"]) {\n        src\n        srcSet\n      }\n    }\n    id\n  }\n}\n\nfragment PartnersRail_partnerCategory_43V8rY on PartnerCategory {\n  name\n  primary: partners(defaultProfilePublic: true, eligibleForListing: true, eligibleForPrimaryBucket: true, partnerCategories: $category, sort: RANDOM_SCORE_DESC, type: $type) {\n    internalID\n    ...PartnerCell_partner\n    id\n  }\n  secondary: partners(eligibleForListing: true, eligibleForSecondaryBucket: true, type: $type, partnerCategories: $category, sort: RANDOM_SCORE_DESC, defaultProfilePublic: true) {\n    internalID\n    ...PartnerCell_partner\n    id\n  }\n}\n","variables":{"id":"emerging-art","category":"GALLERY","type":"GALLERY"}}' \
+  --compressed

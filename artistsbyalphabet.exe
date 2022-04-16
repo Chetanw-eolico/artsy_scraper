@@ -1,0 +1,16 @@
+curl 'https://metaphysics-production.artsy.net/v2' \
+  -H 'authority: metaphysics-production.artsy.net' \
+  -H 'pragma: no-cache' \
+  -H 'cache-control: no-cache' \
+  -H 'accept: */*' \
+  -H 'x-timezone: Asia/Calcutta' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36' \
+  -H 'content-type: application/json' \
+  -H 'origin: https://www.artsy.net' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'referer: https://www.artsy.net/' \
+  -H 'accept-language: en-GB,en-US;q=0.9,en;q=0.8' \
+  --data-binary $'{"id":"artistsRoutes_ArtistsByLetterQuery","query":"query artistsRoutes_ArtistsByLetterQuery(\\n  $letter: String\u0021\\n  $page: Int\\n  $size: Int\\n) {\\n  viewer {\\n    ...ArtistsByLetter_viewer_qU0ud\\n  }\\n}\\n\\nfragment ArtistsByLetter_viewer_qU0ud on Viewer {\\n  artistsConnection(letter: $letter, page: $page, size: $size) {\\n    pageInfo {\\n      endCursor\\n      hasNextPage\\n    }\\n    pageCursors {\\n      ...Pagination_pageCursors\\n    }\\n    artists: edges {\\n      artist: node {\\n        internalID\\n        name\\n        href\\n        id\\n      }\\n    }\\n  }\\n}\\n\\nfragment Pagination_pageCursors on PageCursors {\\n  around {\\n    cursor\\n    page\\n    isCurrent\\n  }\\n  first {\\n    cursor\\n    page\\n    isCurrent\\n  }\\n  last {\\n    cursor\\n    page\\n    isCurrent\\n  }\\n  previous {\\n    cursor\\n    page\\n  }\\n}\\n","variables":{"letter":"a","page":1,"size":100}}' \
+  --compressed

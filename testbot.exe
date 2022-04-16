@@ -1,0 +1,16 @@
+curl 'https://metaphysics-production.artsy.net/v2' \
+  -H 'authority: metaphysics-production.artsy.net' \
+  -H 'pragma: no-cache' \
+  -H 'cache-control: no-cache' \
+  -H 'accept: */*' \
+  -H 'x-timezone: Asia/Calcutta' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36' \
+  -H 'content-type: application/json' \
+  -H 'origin: https://www.artsy.net' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'referer: https://www.artsy.net/' \
+  -H 'accept-language: en-GB,en-US;q=0.9,en;q=0.8' \
+  --data-binary $'{"id":"partnerRoutes_OverviewQuery","query":"query partnerRoutes_OverviewQuery(\\n  $partnerId: String\u0021\\n) {\\n  partner(id: $partnerId) @principalField {\\n    ...Overview_partner\\n    id\\n  }\\n}\\n\\nfragment AboutPartner_partner on Partner {\\n  profile {\\n    fullBio\\n    bio\\n    id\\n  }\\n  website\\n  vatNumber\\n  displayFullPartnerPage\\n}\\n\\nfragment ArticleCard_article on Article {\\n  channelID\\n  thumbnailTitle\\n  href\\n  author {\\n    name\\n    id\\n  }\\n  contributingAuthors {\\n    name\\n    id\\n  }\\n  thumbnailImage {\\n    medium: cropped(width: 400, height: 300) {\\n      width\\n      height\\n      src\\n      srcSet\\n    }\\n  }\\n}\\n\\nfragment ArticlesRail_partner on Partner {\\n  slug\\n  articlesConnection(first: 8) {\\n    totalCount\\n    edges {\\n      node {\\n        internalID\\n        ...ArticleCard_article\\n        id\\n      }\\n    }\\n  }\\n}\\n\\nfragment ArtistsRail_partner on Partner {\\n  slug\\n  profileArtistsLayout\\n  displayFullPartnerPage\\n  artistsWithPublishedArtworks: artistsConnection(hasPublishedArtworks: true, displayOnPartnerProfile: true) {\\n    totalCount\\n  }\\n  representedArtistsWithoutPublishedArtworks: artistsConnection(representedBy: true, hasPublishedArtworks: false, displayOnPartnerProfile: true) {\\n    totalCount\\n  }\\n}\\n\\nfragment Overview_partner on Partner {\\n  slug\\n  partnerType\\n  displayFullPartnerPage\\n  profileBannerDisplay\\n  displayArtistsSection\\n  ...AboutPartner_partner\\n  ...ShowsRail_partner\\n  ...ArtistsRail_partner\\n  ...SubscriberBanner_partner\\n  ...ArticlesRail_partner\\n  locationsConnection(first: 1) {\\n    edges {\\n      node {\\n        city\\n        coordinates {\\n          lat\\n          lng\\n        }\\n        id\\n      }\\n    }\\n  }\\n}\\n\\nfragment ShowCard_show on Show {\\n  href\\n  name\\n  isFairBooth\\n  exhibitionPeriod\\n  coverImage {\\n    medium: cropped(width: 320, height: 240) {\\n      width\\n      height\\n      src\\n      srcSet\\n    }\\n  }\\n}\\n\\nfragment ShowsRail_partner on Partner {\\n  slug\\n  displayFullPartnerPage\\n  showsConnection(status: ALL, first: 20, isDisplayable: true) {\\n    totalCount\\n    edges {\\n      node {\\n        id\\n        ...ShowCard_show\\n      }\\n    }\\n  }\\n}\\n\\nfragment SubscriberBanner_partner on Partner {\\n  hasFairPartnership\\n  name\\n}\\n","variables":{"partnerId":"david-gill-gallery"}}' \
+  --compressed
