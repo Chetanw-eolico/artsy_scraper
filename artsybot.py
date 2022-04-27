@@ -87,7 +87,7 @@ class ArtsyBot(object):
         self.httpHeaders['X-TIMEZONE'] = 'Asia/Kolkata'
         self.homeDir = os.getcwd()
         self.requestUrl = targeturl
-        print(self.requestUrl)
+        #print(self.requestUrl)
         self.section = section
         parsedUrl = urlparse(self.requestUrl)
         self.baseUrl = parsedUrl.scheme + "://" + parsedUrl.netloc
@@ -99,11 +99,12 @@ class ArtsyBot(object):
         self.jsondata = {}
         # Connect to database
         #self.dbconn = MySQLdb.connect(user="artsyuser",passwd="artsypasswd",host="localhost",db="artsydb")
-        self.dbconn = MySQLdb.connect(user="root",passwd="Passw0rd@12",host="localhost",db="artsydb")
+        self.dbconn = MySQLdb.connect(user="artsyuser",passwd="artbank#12Passwd",host="localhost",db="artsydb")
         self.cursor = self.dbconn.cursor()
         # DB connection done.
         self.logfp = open(logfile, "w+")
         self.artistsdict = {}
+        self.museumslist = []
 
 
     def executebot(self, catslug):
@@ -348,14 +349,32 @@ class ArtsyBot(object):
             srcset = jsondata['data']['partner']['showsConnection']['edges'][0]['node']['coverImage']['medium']['srcSet']
             srcsetimages = srcset.split(",")
             largePattern = re.compile("large", re.IGNORECASE)
+            mediumPattern = re.compile("medium", re.IGNORECASE)
             magnificationPattern = re.compile("\s+\d+x")
+            srcPattern = re.compile("src=(.*)$")
             for imgsrc in srcsetimages:
                 if re.search(largePattern, imgsrc):
                     imgsrc = magnificationPattern.sub("", imgsrc)
-                    gallerydata['coverimage'] = imgsrc
+                    scp = re.search(srcPattern, imgsrc)
+                    if scp:
+                        imgurl = scp.groups()[0]
+                        imgurl = imgurl.replace("%3A", ":").replace("%2F", "/")
+                        gallerydata['coverimage'] = imgurl
+                    else:
+                        gallerydata['coverimage'] = imgsrc
+                elif re.search(mediumPattern, imgsrc):
+                    imgsrc = magnificationPattern.sub("", imgsrc)
+                    scp = re.search(srcPattern, imgsrc)
+                    if scp:
+                        imgurl = scp.groups()[0]
+                        imgurl = imgurl.replace("%3A", ":").replace("%2F", "/")
+                        gallerydata['coverimage'] = imgurl
+                    else:
+                        gallerydata['coverimage'] = imgsrc
                     # TO DO: Download image and store it in some location
             events = jsondata['data']['partner']['showsConnection']['edges']
             for evt in events:
+                #print(evt)
                 eventdict = {}
                 eventdict['eventname'] = evt['node']['name']
                 eventdict['eventperiod'] = evt['node']['exhibitionPeriod']
@@ -365,6 +384,14 @@ class ArtsyBot(object):
                     eventdict['eventtype'] = "Booth"
                 eventdict['eventurl'] = "https://www.artsy.net" + evt['node']['href']
                 eventdict['eventinfo'] = ""
+                try:
+                    imgsrc = evt['node']['coverImage']['medium']['src']
+                except:
+                    imgsrc = ""
+                escp = re.search(srcPattern, imgsrc)
+                if escp:
+                    eventdict['coverimage'] = escp.groups()[0]
+                    eventdict['coverimage'] = eventdict['coverimage'].replace("%3A", ":").replace("%2F", "/")
                 eventdata.append(eventdict)
             gallerydata['events'] = eventdata
         except:
@@ -391,6 +418,7 @@ class ArtsyBot(object):
 
     def getpricinginfo(self, awslug):
         botcontentpath = "/root/artwork/artsy/artworkpricebot.exe"
+        #botcontentpath = "/home/supmit/work/artwork/theeolicoweb/artsy_scraper/artworkpricebot.exe"
         fe = open(botcontentpath)
         botcodetemplate = fe.read()
         fe.close()
@@ -413,7 +441,7 @@ class ArtsyBot(object):
             return ""
         pricingdata = {'estimate' : '', 'soldprice' : ''}
         try:
-            pricingdata = {'estimate' : jsondata['data']['artwork']['listPrice']['minor'], 'soldprice' : ''}
+            pricingdata = {'estimate' : str(jsondata['data']['artwork']['listPrice']['minor']), 'soldprice' : ''}
         except:
             print("JSON Artwork Price keys Error: %s"%sys.exc_info()[1].__str__())
         return pricingdata
@@ -422,10 +450,12 @@ class ArtsyBot(object):
     def getartworkdetails(self, awslug, title, artists):
         artworkdata = {'artistbirthyear' : '', 'artistdeathyear' : '', 'artistnationality' : '', 'size' : '', 'estimate' : '', 'soldprice' : '', 'medium' : '', 'signature' : '', 'letterofauthenticity' : '', 'description' : '', 'provenance' : '', 'literature' : '', 'exhibitions' : '', 'image1' : '', 'image2' : '', 'image3' : '', 'image4' : ''}
         # run eventartworkdetailsbot.exe code, map artist info from artists table and fill up the dict above
-        botcontentpath = "/root/artwork/artsy/eventartworkdetailsbot.exe"
+        botcontentpath = "/root/artwork/artsy/eventartworkdetailsbot2.exe"
+        #botcontentpath = "/home/supmit/work/artwork/theeolicoweb/artsy_scraper/eventartworkdetailsbot2.exe"
         fe = open(botcontentpath)
         botcodetemplate = fe.read()
         fe.close()
+        #print("####################### " + awslug + " ###############################")
         botcode = botcodetemplate.replace("####AWSLUG####", awslug)
         tstr = str(int(time.time()))
         botpath = os.getcwd() + os.path.sep + "eventartworkdetailsbot_%s.exe"%tstr
@@ -450,6 +480,13 @@ class ArtsyBot(object):
         except:
             pass
         try:
+            artworkdata['description'] = str(artdata['meta']['description'])
+            artworkdata['size'] = str(artdata['dimensions']['cm'])
+            #print(artworkdata['description'])
+            #print(artworkdata['size'])
+        except:
+            pass
+        try:
             artworkdata['signature'] = str(jsondata['data']['signatureInfo'])
         except:
             pass
@@ -459,6 +496,10 @@ class ArtsyBot(object):
             pass
         try:
             artworkdata['medium'] = str(jsondata['data']['mediumType']['longDescription'])
+        except:
+            pass
+        try:
+            artworkdata['medium'] = str(artdata['medium'])
         except:
             pass
         try:
@@ -473,9 +514,32 @@ class ArtsyBot(object):
             artworkdata['exhibitions'] = str(jsondata['data']['exhibition_history'])
         except:
             pass
+        try:
+            #imgsrc = str(artdata['partner']['profile']['icon']['cropped']['src'])
+            imgsrc = str(artdata['partner']['profile']['image']['resized']['url'])
+            srcPattern = re.compile("src=(.*)$")
+            spc = re.search(srcPattern, imgsrc)
+            if spc:
+                artworkdata['image1'] = spc.groups()[0]
+                artworkdata['image1'] = artworkdata['image1'].replace("%3A", ":").replace("%2F", "/")
+            if artdata['images'].__len__() > 0:
+                artworkdata['image1'] = artdata['images'][0]['url']
+            if artdata['images'].__len__() > 1:
+                artworkdata['image2'] = artdata['images'][1]['url']
+            if artdata['images'].__len__() > 2:
+                artworkdata['image3'] = artdata['images'][2]['url']
+            if artdata['images'].__len__() > 3:
+                artworkdata['image4'] = artdata['images'][3]['url']
+            #print(artworkdata['image1'])
+        except:
+            pass
         pricinginfo = self.getpricinginfo(awslug)
         artworkdata['estimate'] = pricinginfo['estimate']
         artworkdata['soldprice'] = pricinginfo['soldprice']
+        try:
+            artworkdata['soldprice'] = str(artdata['listPrice']['currencyCode']) + " " + str(artdata['listPrice']['major'])
+        except:
+            pass
         aname = artists
         if "," in artists:
             artistslist = artists.split(",")
@@ -492,7 +556,9 @@ class ArtsyBot(object):
     def geteventartworks(self, eslug):
         baseurl = "https://www.artsy.net"
         workslist = []
+        artistslist = []
         botcontentpath = "/root/artwork/artsy/eventartworksbot.exe"
+        #botcontentpath = "/home/supmit/work/artwork/theeolicoweb/artsy_scraper/eventartworksbot.exe"
         fe = open(botcontentpath)
         botcodetemplate = fe.read()
         fe.close()
@@ -530,10 +596,19 @@ class ArtsyBot(object):
             # Remember to leave a pattern for gallery_id and event_id in the insert sql.
             insertartworksql = "insert into artworks (artworkname, creationdate, gallery_id, artistname, artistbirthyear, artistdeathyear, artistnationality, size, estimate, soldprice, medium, event_id, signature, letterofauthenticity, description, provenance, literature, image1, image2, image3, image4, workurl, inserted, edited, exhibitions) values ('%s', '%s', '####GALLERYID####', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '####EVENTID####', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', now(), now(), '%s')"%(title, creationdate, artists, artworkdatadict['artistbirthyear'], artworkdatadict['artistdeathyear'], artworkdatadict['artistnationality'], artworkdatadict['size'], artworkdatadict['estimate'], artworkdatadict['soldprice'], artworkdatadict['medium'], artworkdatadict['signature'], artworkdatadict['letterofauthenticity'], artworkdatadict['description'], artworkdatadict['provenance'], artworkdatadict['literature'], artworkdatadict['image1'], artworkdatadict['image2'], artworkdatadict['image3'], artworkdatadict['image4'], artworkurl, artworkdatadict['exhibitions'])
             workslist.append(insertartworksql)
-        return workslist
+            selartistsql = "select count(*) as c from artists where artistname='%s'"%artists.title()
+            try:
+                self.cursor.execute(selartistsql)
+                artistrecs = self.cursor.fetchall()
+            except:
+                artistrecs = None
+            if not artistrecs or artistrecs[0][0] == 0:
+                insertartistsql = "insert into artists (artistname, nationality, birthdate, deathdate, about, profileurl, gender, slug, squareimage, largeimage, edges, priority, event_id, inserted, edited) values ('%s', '%s', '%s', '%s', '', '', '', '', '%s', '%s', '', '5', '####EVENTID####', now(), now())"%(artists.title(), artworkdatadict['artistnationality'], artworkdatadict['artistbirthyear'], artworkdatadict['artistdeathyear'], artworkdatadict['image1'], artworkdatadict['image1'])
+                artistslist.append(insertartistsql)
+        return [workslist, artistslist]
 
 
-    def populategalleriesdata(self):
+    def populategalleriesdata(self, catname):
         jsondict = self.jsondata
         baseurl = "https://www.artsy.net"
         #print(jsondict)
@@ -545,6 +620,7 @@ class ArtsyBot(object):
             gallerieslist = jsondict['data']['partnerCategory']['primary']
             for gallery in gallerieslist:
                 galleryname = gallery['name']
+                #print(catname + " ############## " + galleryname)
                 galleryslug = gallery['slug']
                 galleryname = galleryname.replace("'", "\\'")
                 galleryurl = baseurl + gallery['href']
@@ -555,7 +631,7 @@ class ArtsyBot(object):
                     loccity = loccity.replace("'", "\\'")
                     locationslist.append(loccity)
                 locations = ", ".join(locationslist)
-                inssql = "insert into galleries (galleryname, slug, location, description, galleryurl, website, coverimage, inserted, edited) values ('%s', '%s', '%s', '##DESC##', '%s', '##WEBS##', '##COVR##', now(), now())"%(galleryname, galleryslug, locations, galleryurl)
+                inssql = "insert into galleries (galleryname, slug, location, description, galleryurl, website, coverimage, inserted, edited, gallerytype) values ('%s', '%s', '%s', '##DESC##', '%s', '##WEBS##', '##COVR##', now(), now(), '%s')"%(galleryname, galleryslug, locations, galleryurl, catname)
                 sqllist.append(inssql)
                 galleriesdict[inssql] = galleryslug
         except:
@@ -587,13 +663,16 @@ class ArtsyBot(object):
                 eventperiod = eventdict['eventperiod'].replace("'", "").replace('"', '')
                 eventurl = eventdict['eventurl']
                 eventslug = eventurl.replace("https://www.artsy.net/show/", "")
-                artworkslist = self.geteventartworks(eventslug)
+                retlist = self.geteventartworks(eventslug)
+                artworkslist = retlist[0]
+                artistslist = retlist[1]
                 eventtype = eventdict['eventtype']
                 if eventtype is None:
                     eventtype = "Unknown"
                 if eventurl is None:
                     eventurl = ""
                 eventinfo = ""
+                coverimage = eventdict['coverimage']
                 try:
                     resp = requests.get(eventurl)
                     esoup = BeautifulSoup(resp.text, features="html.parser")
@@ -607,13 +686,16 @@ class ArtsyBot(object):
                         eventinfo = eventinfo.replace("\n", "").replace("\r", "")
                 except:
                     print("Error: %s"%sys.exc_info()[1].__str__())
-                evtinssql = "insert into events (eventtype, eventstatus, gallery_id, eventinfo, artworkscount, eventurl, eventname, eventperiod, inserted, edited) values ('%s', '', %s, '%s', 0, '%s', '%s', '%s', now(), now())"%(eventtype, lastid, eventinfo, eventurl, eventname, eventperiod)
+                evtinssql = "insert into events (eventtype, eventstatus, gallery_id, eventinfo, artworkscount, eventurl, eventname, eventperiod, inserted, edited, eventimage) values ('%s', '', %s, '%s', 0, '%s', '%s', '%s', now(), now(), '%s')"%(eventtype, lastid, eventinfo, eventurl, eventname, eventperiod, coverimage)
                 try:
                     self.cursor.execute(evtinssql)
                 except:
                     pass
-                self.cursor.execute("select max(id) from events")
-                evrecords = self.cursor.fetchall()
+                try:
+                    self.cursor.execute("select max(id) from events")
+                    evrecords = self.cursor.fetchall()
+                except:
+                    evrecords = []
                 lastevid = -1
                 if evrecords.__len__() == 0:
                     print("Error occurred in fetching last inserted event Id - %s"%gdata['website'])
@@ -622,15 +704,23 @@ class ArtsyBot(object):
                 # Get last event_id and execute statements in artworkslist here
                 for insworksql in artworkslist:
                     insworksql = insworksql.replace("####GALLERYID####", str(lastid)).replace("####EVENTID####", str(lastevid))
+                    #print(insworksql)
                     try:
                         self.cursor.execute(insworksql)
                     except:
                         print("Error in '%s' - %s"%(insworksql, sys.exc_info()[1].__str__()))
+                for insartistsql in artistslist:
+                    insartistsql = insartistsql.replace("####EVENTID####", str(lastevid))
+                    try:
+                        self.cursor.execute(insartistsql)
+                    except:
+                        print("Error in '%s' - %s"%(insartistsql, sys.exc_info()[1].__str__()))
                 self.dbconn.commit()
 
 
     def getcategories(self):
         catbotpath = "/root/artwork/artsy/gallery_cats.exe"
+        #catbotpath = "/home/supmit/work/artwork/theeolicoweb/artsy_scraper/gallery_cats.exe"
         catoutput = self.executecatbot(catbotpath)
         self.getjsondata(catoutput)
         categories = []
@@ -640,6 +730,21 @@ class ArtsyBot(object):
             jsoncats = []
         for cat in jsoncats:
             categories.append(cat['slug'])
+        return categories
+
+
+    def getcategories2(self):
+        catbotpath = "/root/artwork/artsy/gallery_cats2.exe"
+        #catbotpath = "/home/supmit/work/artwork/theeolicoweb/artsy_scraper/gallery_cats2.exe"
+        catoutput = self.executecatbot(catbotpath)
+        self.getjsondata(catoutput)
+        categories = {}
+        try:
+            jsoncats = self.jsondata['data']['viewer']['allOptions']['aggregations'][0]['counts']
+        except:
+            jsoncats = []
+        for cat in jsoncats:
+            categories[cat['value']] = cat['text']
         return categories
 
 
@@ -694,9 +799,10 @@ class ArtsyBot(object):
 
     def getartists(self):
         baseurl = "https://www.artsy.net"
-        alphabets = ['d', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+        alphabets = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
         pagenumbers = [x for x in range(1, 50)]
         artistdetailsbotpath = "/root/artwork/artsy/artistdetails.exe"
+        #artistdetailsbotpath = "/home/supmit/work/artwork/theeolicoweb/artsy_scraper/artistdetails.exe"
         fp = open(artistdetailsbotpath)
         artistdetailsbotcontent = fp.read()
         fp.close()
@@ -704,69 +810,316 @@ class ArtsyBot(object):
             for pageno in pagenumbers:
                 artists = artsybot.getartistsbyalphabet(ch, str(pageno))
                 for adict in artists:
-                    name = list(adict.keys())[0]
-                    print("Working on " + name + " ## " + adict[name][1])
-                    artistdetailsbotcode = artistdetailsbotcontent.replace("####ARTSLUG####", adict[name][1])
-                    tstr = str(int(time.time()))
-                    artbotpath = os.getcwd() + os.path.sep + "artistdetailsbot_%s.exe"%tstr
-                    fb = open(artbotpath, "w")
-                    fb.write(artistdetailsbotcode)
-                    fb.close()
-                    os.chmod(artbotpath, 0o755)
-                    p = os.popen("bash %s"%artbotpath)
-                    output = p.read()
+                    for name in adict.keys():
+                        #print("Working on " + name + " ## " + adict[name][1])
+                        artistdetailsbotcode = artistdetailsbotcontent.replace("####ARTSLUG####", adict[name][1])
+                        name = name.replace("'", "\'").replace('"', "")
+                        tstr = str(int(time.time()))
+                        artbotpath = os.getcwd() + os.path.sep + "artistdetailsbot_%s.exe"%tstr
+                        fb = open(artbotpath, "w")
+                        fb.write(artistdetailsbotcode)
+                        fb.close()
+                        os.chmod(artbotpath, 0o755)
+                        p = os.popen("bash %s"%artbotpath)
+                        output = p.read()
+                        p.close()
+                        sys.stdout.flush()
+                        os.remove(artbotpath)
+                        try:
+                            jsondata = json.loads(output)
+                        except:
+                            print("Error: %s - continuing to next artist on page."%sys.exc_info()[1].__str__())
+                            continue
+                        try:
+                            slug = str(jsondata['data']['artist']['slug'])
+                        except:
+                            slug = ""
+                        try:
+                            nationality = str(jsondata['data']['artist']['nationality'])
+                        except:
+                            nationality = ""
+                        try:
+                            birthday = str(jsondata['data']['artist']['birthday'])
+                            deathday = str(jsondata['data']['artist']['deathday'])
+                        except:
+                            birthday = ""
+                            deathday = ""
+                        try:
+                            gender = str(jsondata['data']['artist']['gender'])
+                        except:
+                            gender = ""
+                        try:
+                            href = baseurl + str(jsondata['data']['artist']['href'])
+                        except:
+                            href = ""
+                        try:
+                            largeimage = str(jsondata['data']['artist']['image']['large'])
+                            squareimage = str(jsondata['data']['artist']['image']['square'])
+                        except:
+                            largeimage = ""
+                            squareimage = ""
+                        try:
+                            about = str(jsondata['data']['artist']['biographyBlurb']['text'])
+                        except:
+                            about = ""
+                        try:
+                            edges = json.dumps(jsondata['data']['artist']['artworks_connection']['edges'])
+                        except:
+                            edges = "[]"
+                        print(nationality + " ## " + birthday + " ## " + gender + " ## " + largeimage)
+                        chkartistsql = "select id from artists where artistname='%s'"%name.title()
+                        artistid = None
+                        try:
+                            self.cursor.execute(chkartistsql)
+                            artistrecords = self.cursor.fetchall()
+                            if artistrecords.__len__() > 0:
+                                artistid = artistrecords[0][0]
+                        except:
+                            print("Error finding artist '%s': %s"%(name.title(), sys.exc_info()[1].__str__()))
+                        if not artistid:
+                            insartistsql = "insert into artists (artistname, nationality, birthdate, deathdate, about, profileurl, gender, slug, squareimage, largeimage, edges, inserted, edited) values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', now(), now())"%(name.title(), nationality, birthday, deathday, about, href, gender, slug, squareimage, largeimage, edges)
+                            #print(insartistsql)
+                            try:
+                                self.cursor.execute(insartistsql)    
+                            except:
+                                print("Error: %s"%sys.exc_info()[1].__str__())
+                        else:
+                            updateartistsql = "update artists set nationality='%s', birthdate='%s', deathdate='%s', about='%s', squareimage='%s', largeimage='%s', edited=now(), profileurl='%s', gender='%s', slug='%s' where id=%s"%(nationality, birthday, deathday, about, squareimage, largeimage, href, gender, slug, artistid)
+                            try:
+                                self.cursor.execute(updateartistsql)    
+                            except:
+                                print("Error: %s"%sys.exc_info()[1].__str__())
+                    self.dbconn.commit()
+
+
+    def getmuseums(self):
+        getmuseumtypescmd = """curl 'https://metaphysics-production.artsy.net/v2' -X POST -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36' -H 'Accept: */*' -H 'Accept-Language: en-US,en;q=0.5' -H 'Accept-Encoding: gzip, deflate, br' -H 'Referer: https://www.artsy.net/' -H 'Content-Type: application/json' -H 'X-TIMEZONE: Asia/Kolkata' -H 'Origin: https://www.artsy.net' -H 'Connection: keep-alive' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-site' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers' --data-raw '{"id":"PartnersRailsQuery","query":"query PartnersRailsQuery(\\n  $categoryType: PartnerCategoryType\\n) {\\n  viewer {\\n    ...PartnersRails_viewer_1Wcb23\\n  }\\n}\\n\\nfragment PartnersRails_viewer_1Wcb23 on Viewer {\\n  partnerCategories(categoryType: $categoryType, size: 150, internal: false) {\\n    name\\n    slug\\n    id\\n  }\\n}\\n","variables":{"categoryType":"INSTITUTION","type":"INSTITUTION"}}' --output museumtypes.json"""
+        tstr = str(int(time.time()))
+        botpath = os.getcwd() + os.path.sep + "museumtypes_%s.exe"%tstr
+        fb = open(botpath, "w")
+        fb.write(getmuseumtypescmd)
+        fb.close()
+        os.chmod(botpath, 0o755)
+        p = os.popen("%s"%botpath)
+        p.close()
+        os.remove(botpath)
+        fp = open("museumtypes.json", "rb")
+        d = fp.read()
+        fp.close()
+        output = self.__class__._decodeGzippedContent(d)
+        os.remove("museumtypes.json")
+        jsondata = json.loads(output)
+        categorieslist = jsondata['data']['viewer']['partnerCategories']
+        categories = []
+        for cat in categorieslist:
+            catslug = cat['slug']
+            categories.append(catslug)
+        #print(categories)
+        catbot = """curl 'https://metaphysics-production.artsy.net/v2' -X POST -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36' -H 'Accept: */*' -H 'Accept-Language: en-US,en;q=0.5' -H 'Accept-Encoding: gzip, deflate, br' -H 'Referer: https://www.artsy.net/' -H 'Content-Type: application/json' -H 'X-TIMEZONE: Asia/Kolkata' -H 'Origin: https://www.artsy.net' -H 'Connection: keep-alive' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-site' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers' --data-raw '{"id":"PartnersRailQuery","query":"query PartnersRailQuery(\\n  $id: String!\\n  $category: [String]\\n  $type: [PartnerClassification!]!\\n) {\\n  partnerCategory(id: $id) {\\n    ...PartnersRail_partnerCategory_43V8rY\\n    id\\n  }\\n}\\n\\nfragment FollowProfileButton_profile on Profile {\\n  id\\n  slug\\n  name\\n  internalID\\n  is_followed: isFollowed\\n}\\n\\nfragment PartnerCell_partner on Partner {\\n  internalID\\n  slug\\n  name\\n  href\\n  initials\\n  locationsConnection(first: 15) {\\n    edges {\\n      node {\\n        city\\n        id\\n      }\\n    }\\n  }\\n  categories {\\n    name\\n    slug\\n    id\\n  }\\n  profile {\\n    ...FollowProfileButton_profile\\n    isFollowed\\n    image {\\n      cropped(width: 445, height: 334, version: [\\"wide\\", \\"large\\", \\"featured\\", \\"larger\\"]) {\\n        src\\n        srcSet\\n      }\\n    }\\n    id\\n  }\\n}\\n\\nfragment PartnersRail_partnerCategory_43V8rY on PartnerCategory {\\n  name\\n  primary: partners(defaultProfilePublic: true, eligibleForListing: true, eligibleForPrimaryBucket: true, partnerCategories: $category, sort: RANDOM_SCORE_DESC, type: $type) {\\n    internalID\\n    ...PartnerCell_partner\\n    id\\n  }\\n  secondary: partners(eligibleForListing: true, eligibleForSecondaryBucket: true, type: $type, partnerCategories: $category, sort: RANDOM_SCORE_DESC, defaultProfilePublic: true) {\\n    internalID\\n    ...PartnerCell_partner\\n    id\\n  }\\n}\\n","variables":{"id":"##CATEGORY##","category":"INSTITUTION","type":"INSTITUTION"}}' --output museumslist.json"""
+        for catslug in categories:
+            botpath = os.getcwd() + os.path.sep + "museumcats_%s.exe"%tstr
+            fb = open(botpath, "w")
+            catbotstr = catbot.replace("##CATEGORY##", catslug)
+            fb.write(catbotstr)
+            fb.close()
+            os.chmod(botpath, 0o755)
+            p = os.popen("bash %s"%botpath)
+            p.close()
+            os.remove(botpath)
+            fp = open("museumslist.json", "rb")
+            d = fp.read()
+            fp.close()
+            output = self.__class__._decodeGzippedContent(d)
+            os.remove("museumslist.json")
+            jsonout = json.loads(output)
+            museumslist = jsonout['data']['partnerCategory']['primary']
+            for museum in museumslist:
+                try:
+                    museumname = museum['name']
+                    museumurl = "https://www.artsy.net" + museum['href']
+                    museumslug = museum['slug']
+                    #print(museumslug)
+                    categories = museum['categories']
+                    museumtypes = []
+                    for c in categories:
+                        cname = c['name']
+                        #print(cname)
+                        museumtypes.append(cname)
+                    museumcroppedimage = museum['profile']['image']['cropped']['src']
+                    mcmd = """curl 'https://metaphysics-production.artsy.net/v2' -X POST -H 'User-Agent: Reaction/Migration' -H 'Accept: */*' -H 'Accept-Language: en-US,en;q=0.5' -H 'Accept-Encoding: gzip, deflate, br' -H 'Referer: https://www.artsy.net/' -H 'Content-Type: application/json' -H 'X-TIMEZONE: Asia/Kolkata' -H 'Origin: https://www.artsy.net' -H 'Connection: keep-alive' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-site' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers' --data-raw '{"id":"partnerRoutes_PartnerQuery","query":"query partnerRoutes_PartnerQuery(\\n  $partnerId: String!\\n) {\\n  partner(id: $partnerId) @principalField {\\n    partnerType\\n    displayFullPartnerPage\\n    ...PartnerApp_partner\\n    id\\n  }\\n}\\n\\nfragment FollowProfileButton_profile on Profile {\\n  id\\n  slug\\n  name\\n  internalID\\n  is_followed: isFollowed\\n}\\n\\nfragment NavigationTabs_partner on Partner {\\n  slug\\n  partnerType\\n  displayArtistsSection\\n  displayWorksSection\\n  counts {\\n    eligibleArtworks\\n    displayableShows\\n  }\\n  locations: locationsConnection(first: 20) {\\n    totalCount\\n  }\\n  articles: articlesConnection {\\n    totalCount\\n  }\\n  representedArtists: artistsConnection(representedBy: true, displayOnPartnerProfile: true) {\\n    totalCount\\n  }\\n  notRepresentedArtists: artistsConnection(representedBy: false, hasPublishedArtworks: true, displayOnPartnerProfile: true) {\\n    totalCount\\n  }\\n  viewingRooms: viewingRoomsConnection(statuses: [live, closed, scheduled]) {\\n    totalCount\\n  }\\n}\\n\\nfragment PartnerApp_partner on Partner {\\n  partnerType\\n  displayFullPartnerPage\\n  partnerPageEligible\\n  isDefaultProfilePublic\\n  categories {\\n    id\\n    name\\n  }\\n  profile {\\n    ...PartnerHeaderImage_profile\\n    id\\n  }\\n  ...PartnerMeta_partner\\n  ...PartnerHeader_partner\\n  ...NavigationTabs_partner\\n}\\n\\nfragment PartnerHeaderImage_profile on Profile {\\n  image {\\n    url(version: \\"wide\\")\\n  }\\n}\\n\\nfragment PartnerHeader_partner on Partner {\\n  name\\n  type\\n  slug\\n  profile {\\n    icon {\\n      resized(width: 80, height: 80, version: \\"square140\\") {\\n        src\\n        srcSet\\n      }\\n    }\\n    ...FollowProfileButton_profile\\n    id\\n  }\\n  locations: locationsConnection(first: 20) {\\n    totalCount\\n    edges {\\n      node {\\n        city\\n        id\\n      }\\n    }\\n  }\\n}\\n\\nfragment PartnerMeta_partner on Partner {\\n  locationsConnection(first: 1) {\\n    edges {\\n      node {\\n        address\\n        address2\\n        city\\n        coordinates {\\n          lat\\n          lng\\n        }\\n        country\\n        phone\\n        postalCode\\n        state\\n        id\\n      }\\n    }\\n  }\\n  meta {\\n    image\\n    title\\n    description\\n  }\\n  name\\n  slug\\n}\\n","variables":{"partnerId":"##MSLUG##"}}' --output museumdetails.json"""
+                    mcmdstr = mcmd.replace("##MSLUG##", museumslug)
+                    mbotpath = os.getcwd() + os.path.sep + "museumdetails_%s.exe"%tstr
+                    fm = open(mbotpath, "w")
+                    fm.write(mcmdstr)
+                    fm.close()
+                    os.chmod(mbotpath, 0o755)
+                    p = os.popen("bash %s"%mbotpath)
                     p.close()
-                    sys.stdout.flush()
-                    os.remove(artbotpath)
-                    try:
-                        jsondata = json.loads(output)
-                    except:
-                        print("Error: %s - continuing to next artist on page."%sys.exc_info()[1].__str__())
-                        continue
-                    try:
-                        slug = str(jsondata['data']['artist']['slug'])
-                    except:
-                        slug = ""
-                    try:
-                        nationality = str(jsondata['data']['artist']['nationality'])
-                    except:
-                        nationality = ""
-                    try:
-                        birthday = str(jsondata['data']['artist']['birthday'])
-                        deathday = str(jsondata['data']['artist']['deathday'])
-                    except:
-                        birthday = ""
-                        deathday = ""
-                    try:
-                        gender = str(jsondata['data']['artist']['gender'])
-                    except:
-                        gender = ""
-                    try:
-                        href = baseurl + str(jsondata['data']['artist']['href'])
-                    except:
-                        href = ""
-                    try:
-                        largeimage = str(jsondata['data']['artist']['image']['large'])
-                        squareimage = str(jsondata['data']['artist']['image']['square'])
-                    except:
-                        largeimage = ""
-                        squareimage = ""
-                    try:
-                        about = str(jsondata['data']['artist']['biographyBlurb']['text'])
-                    except:
-                        about = ""
-                    try:
-                        edges = json.dumps(jsondata['data']['artist']['artworks_connection']['edges'])
-                    except:
-                        edges = "[]"
-                    #print(nationality + " ## " + birthday + " ## " + gender)
-                    insartistsql = "insert into artists (artistname, nationality, birthdate, deathdate, about, profileurl, gender, slug, squareimage, largeimage, edges, inserted, edited) values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', now(), now())"%(name, nationality, birthday, deathday, about, href, gender, slug, squareimage, largeimage, edges)
-                    #print(insartistsql)
-                    try:
-                        self.cursor.execute(insartistsql)    
-                    except:
-                        print("Error: %s"%sys.exc_info()[1].__str__())
-                self.dbconn.commit()
+                    os.remove(mbotpath)
+                    mfp = open("museumdetails.json", "rb")
+                    md = mfp.read()
+                    mfp.close()
+                    moutput = self.__class__._decodeGzippedContent(md)
+                    os.remove("museumdetails.json")
+                    mjsondata = json.loads(moutput)
+                    #print(mjsondata)
+                    mcoverimage = mjsondata['data']['partner']['profile']['image']['url']
+                    mdesc = mjsondata['data']['partner']['meta']['description']
+                    mloc = mjsondata['data']['partner']['locationsConnection']['edges'][0]['node']['city']
+                    #print(mdesc)
+                    for mtype in museumtypes:
+                        inssql = "insert into museums (museumname, location, description, museumurl, coverimage, museumtype, priority, edited, inserted) values ('%s', '%s', '%s', '%s', '%s', '%s', 1, now(), now())"%(museumname, mloc, mdesc, museumurl, mcoverimage, mtype)
+                        self.cursor.execute(inssql)
+                    self.dbconn.commit()
+                    self.cursor.execute("select max(id) from museums")
+                    records = self.cursor.fetchall()
+                    lastid = -1
+                    if records.__len__() == 0:
+                        print("Error occurred in fetching last inserted gallery Id - %s"%gdata['website'])
+                    else:
+                        lastid = records[0][0]
+                    musevcmd = """curl 'https://metaphysics-production.artsy.net/v2' -X POST -H 'User-Agent: Reaction/Migration' -H 'Accept: */*' -H 'Accept-Language: en-US,en;q=0.5' -H 'Accept-Encoding: gzip, deflate, br' -H 'Referer: https://www.artsy.net/' -H 'Content-Type: application/json' -H 'X-TIMEZONE: Asia/Kolkata' -H 'Origin: https://www.artsy.net' -H 'Connection: keep-alive' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-site' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers' --data-raw '{"id":"partnerRoutes_OverviewQuery","query":"query partnerRoutes_OverviewQuery(\\n  $partnerId: String!\\n) {\\n  partner(id: $partnerId) @principalField {\\n    ...Overview_partner\\n    id\\n  }\\n}\\n\\nfragment AboutPartner_partner on Partner {\\n  profile {\\n    fullBio\\n    bio\\n    id\\n  }\\n  website\\n  vatNumber\\n  displayFullPartnerPage\\n}\\n\\nfragment ArticleCell_article on Article {\\n  vertical\\n  internalID\\n  title\\n  byline\\n  href\\n  publishedAt(format: \\"MMM D, YYYY\\")\\n  thumbnailImage {\\n    cropped(width: 445, height: 334) {\\n      width\\n      height\\n      src\\n      srcSet\\n    }\\n  }\\n}\\n\\nfragment ArticlesRail_partner on Partner {\\n  slug\\n  articlesConnection(first: 24) {\\n    totalCount\\n    edges {\\n      node {\\n        internalID\\n        ...ArticleCell_article\\n        id\\n      }\\n    }\\n  }\\n}\\n\\nfragment ArtistsRail_partner on Partner {\\n  slug\\n  profileArtistsLayout\\n  displayFullPartnerPage\\n  artistsWithPublishedArtworks: artistsConnection(hasPublishedArtworks: true, displayOnPartnerProfile: true) {\\n    totalCount\\n  }\\n  representedArtistsWithoutPublishedArtworks: artistsConnection(representedBy: true, hasPublishedArtworks: false, displayOnPartnerProfile: true) {\\n    totalCount\\n  }\\n}\\n\\nfragment Overview_partner on Partner {\\n  slug\\n  partnerType\\n  displayFullPartnerPage\\n  profileBannerDisplay\\n  displayArtistsSection\\n  ...AboutPartner_partner\\n  ...ShowsRail_partner\\n  ...ArtistsRail_partner\\n  ...SubscriberBanner_partner\\n  ...ArticlesRail_partner\\n  locationsConnection(first: 1) {\\n    edges {\\n      node {\\n        city\\n        coordinates {\\n          lat\\n          lng\\n        }\\n        id\\n      }\\n    }\\n  }\\n}\\n\\nfragment ShowCard_show on Show {\\n  href\\n  name\\n  isFairBooth\\n  exhibitionPeriod\\n  coverImage {\\n    medium: cropped(width: 320, height: 240) {\\n      width\\n      height\\n      src\\n      srcSet\\n    }\\n  }\\n}\\n\\nfragment ShowsRail_partner on Partner {\\n  slug\\n  displayFullPartnerPage\\n  showsConnection(status: ALL, first: 40, isDisplayable: true) {\\n    totalCount\\n    edges {\\n      node {\\n        id\\n        ...ShowCard_show\\n      }\\n    }\\n  }\\n}\\n\\nfragment SubscriberBanner_partner on Partner {\\n  hasFairPartnership\\n  name\\n}\\n","variables":{"partnerId":"##MSLUG##"}}' --output museumevents.json"""
+                    musevcmdstr = musevcmd.replace("##MSLUG##", museumslug)
+                    mevbotpath = os.getcwd() + os.path.sep + "museumevents_%s.exe"%tstr
+                    fv = open(mevbotpath, "w")
+                    fv.write(musevcmdstr)
+                    fv.close()
+                    os.chmod(mevbotpath, 0o755)
+                    p = os.popen("bash %s"%mevbotpath)
+                    p.close()
+                    os.remove(mevbotpath)
+                    mvfp = open("museumevents.json", "rb")
+                    md = mvfp.read()
+                    mvfp.close()
+                    mvoutput = self.__class__._decodeGzippedContent(md)
+                    #print(mvoutput)
+                    os.remove("museumevents.json")
+                    mvjsondata = json.loads(mvoutput)
+                    edges = mvjsondata['data']['partner']['showsConnection']['edges']
+                    artedges = mvjsondata['data']['partner']['articlesConnection']['edges']
+                    for edge in edges:
+                        evurl = "https://artsy.net" + edge['node']['href']
+                        evname = edge['node']['name']
+                        evname = evname.replace("'", "\'")
+                        evperiod = edge['node']['exhibitionPeriod']
+                        coverimage = edge['node']['coverImage']['medium']['src']
+                        evinfo = mvjsondata['data']['partner']['profile']['fullBio']
+                        evinfo = evinfo.replace("'", "\'")
+                        evtype = ""
+                        presenter = ""
+                        evsql = "insert into museumevents (eventname, eventinfo, eventurl, museum_id, eventperiod, coverimage, eventtype, presenter, edited, inserted) values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', now(), now())"%(evname, evinfo, evurl, lastid, evperiod, coverimage, evtype, presenter)
+                        self.cursor.execute(evsql)
+                    self.dbconn.commit()
+                    evid = -1
+                    self.cursor.execute("select max(id) from museumevents")
+                    evrecords = self.cursor.fetchall()
+                    if evrecords.__len__() == 0:
+                        print("Error occurred in fetching last inserted museum event Id")
+                    else:
+                        evid = evrecords[0][0]
+                    for artedge in artedges:
+                        artname = artedge['node']['title']
+                        artname = artname.replace("'", "\'")
+                        writername = artedge['node']['byline']
+                        articletype = artedge['node']['vertical']
+                        detailurl = "https://artsy.net" + artedge['node']['href']
+                        published = artedge['node']['publishedAt']
+                        thumbimage = artedge['node']['thumbnailImage']['cropped']['src']
+                        artsql = "insert into museumarticles (articlename, museum_id, writername, articletype, detailurl, published, thumbimage, priority, edited, inserted) values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '1', now(), now())"%(artname, lastid, writername, articletype, detailurl, published, thumbimage)
+                        self.cursor.execute(artsql)
+                    self.dbconn.commit()
+                    workscmd = """curl 'https://metaphysics-production.artsy.net/v2' -X POST -H 'User-Agent: Reaction/Migration' -H 'Accept: */*' -H 'Accept-Language: en-US,en;q=0.5' -H 'Accept-Encoding: gzip, deflate, br' -H 'Referer: https://www.artsy.net/' -H 'Content-Type: application/json' -H 'X-TIMEZONE: Asia/Kolkata' -H 'Origin: https://www.artsy.net' -H 'Connection: keep-alive' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-site' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers' --data-raw '{"id":"partnerRoutes_WorksQuery","query":"query partnerRoutes_WorksQuery(\\n  $partnerId: String!\\n  $input: FilterArtworksInput\\n  $aggregations: [ArtworkAggregation]\\n  $shouldFetchCounts: Boolean!\\n) {\\n  partner(id: $partnerId) @principalField {\\n    ...Works_partner_3TMxyn\\n    displayWorksSection\\n    counts {\\n      eligibleArtworks\\n    }\\n    id\\n  }\\n}\\n\\nfragment ArtworkFilterArtworkGrid_filtered_artworks on FilterArtworksConnection {\\n  id\\n  pageInfo {\\n    hasNextPage\\n    endCursor\\n  }\\n  pageCursors {\\n    ...Pagination_pageCursors\\n  }\\n  edges {\\n    node {\\n      id\\n    }\\n  }\\n  ...ArtworkGrid_artworks\\n}\\n\\nfragment ArtworkGrid_artworks on ArtworkConnectionInterface {\\n  __isArtworkConnectionInterface: __typename\\n  edges {\\n    __typename\\n    node {\\n      id\\n      slug\\n      href\\n      internalID\\n      image {\\n        aspect_ratio: aspectRatio\\n      }\\n      ...GridItem_artwork\\n      ...FlatGridItem_artwork\\n    }\\n    ... on Node {\\n      __isNode: __typename\\n      id\\n    }\\n  }\\n}\\n\\nfragment Badge_artwork on Artwork {\\n  is_biddable: isBiddable\\n  href\\n  sale {\\n    is_preview: isPreview\\n    display_timely_at: displayTimelyAt\\n    id\\n  }\\n}\\n\\nfragment Contact_artwork on Artwork {\\n  href\\n  is_inquireable: isInquireable\\n  sale {\\n    is_auction: isAuction\\n    is_live_open: isLiveOpen\\n    is_open: isOpen\\n    is_closed: isClosed\\n    id\\n  }\\n  partner(shallow: true) {\\n    type\\n    id\\n  }\\n  sale_artwork: saleArtwork {\\n    highest_bid: highestBid {\\n      display\\n    }\\n    opening_bid: openingBid {\\n      display\\n    }\\n    counts {\\n      bidder_positions: bidderPositions\\n    }\\n    id\\n  }\\n}\\n\\nfragment Details_artwork on Artwork {\\n  href\\n  title\\n  date\\n  sale_message: saleMessage\\n  cultural_maker: culturalMaker\\n  artists(shallow: true) {\\n    id\\n    href\\n    name\\n  }\\n  collecting_institution: collectingInstitution\\n  partner(shallow: true) {\\n    name\\n    href\\n    id\\n  }\\n  sale {\\n    endAt\\n    cascadingEndTimeInterval\\n    startAt\\n    is_auction: isAuction\\n    is_closed: isClosed\\n    id\\n  }\\n  sale_artwork: saleArtwork {\\n    lotLabel\\n    endAt\\n    formattedEndDateTime\\n    counts {\\n      bidder_positions: bidderPositions\\n    }\\n    highest_bid: highestBid {\\n      display\\n    }\\n    opening_bid: openingBid {\\n      display\\n    }\\n    id\\n  }\\n}\\n\\nfragment FlatGridItem_artwork on Artwork {\\n  ...Metadata_artwork\\n  ...SaveButton_artwork\\n  internalID\\n  title\\n  image_title: imageTitle\\n  image {\\n    resized(width: 445, version: [\\"normalized\\", \\"larger\\", \\"large\\"]) {\\n      src\\n      srcSet\\n      width\\n      height\\n    }\\n  }\\n  artistNames\\n  href\\n  is_saved: isSaved\\n}\\n\\nfragment GridItem_artwork on Artwork {\\n  internalID\\n  title\\n  image_title: imageTitle\\n  image {\\n    placeholder\\n    url(version: \\"large\\")\\n    aspect_ratio: aspectRatio\\n  }\\n  artistNames\\n  href\\n  is_saved: isSaved\\n  ...Metadata_artwork\\n  ...SaveButton_artwork\\n  ...Badge_artwork\\n}\\n\\nfragment Metadata_artwork on Artwork {\\n  ...Details_artwork\\n  ...Contact_artwork\\n  href\\n}\\n\\nfragment Pagination_pageCursors on PageCursors {\\n  around {\\n    cursor\\n    page\\n    isCurrent\\n  }\\n  first {\\n    cursor\\n    page\\n    isCurrent\\n  }\\n  last {\\n    cursor\\n    page\\n    isCurrent\\n  }\\n  previous {\\n    cursor\\n    page\\n  }\\n}\\n\\nfragment SaveButton_artwork on Artwork {\\n  id\\n  internalID\\n  slug\\n  is_saved: isSaved\\n  title\\n}\\n\\nfragment Works_partner_3TMxyn on Partner {\\n  slug\\n  internalID\\n  sidebar: filterArtworksConnection(first: 1, aggregations: $aggregations) {\\n    counts @include(if: $shouldFetchCounts) {\\n      followedArtists\\n    }\\n    aggregations {\\n      slice\\n      counts {\\n        name\\n        value\\n        count\\n      }\\n    }\\n    id\\n  }\\n  filtered_artworks: filterArtworksConnection(first: 60, input: $input) {\\n    id\\n    ...ArtworkFilterArtworkGrid_filtered_artworks\\n  }\\n}\\n","variables":{"partnerId":"##MSLUG##","input":{"majorPeriods":[],"page":1,"sizes":[],"sort":"-decayed_merch","artistIDs":[],"attributionClass":[],"partnerIDs":[],"additionalGeneIDs":[],"colors":[],"locationCities":[],"artistNationalities":[],"materialsTerms":[],"height":"*-*","width":"*-*","priceRange":"*-*"},"aggregations":["TOTAL","MEDIUM","MATERIALS_TERMS","ARTIST_NATIONALITY","ARTIST"],"shouldFetchCounts":false}}' --output museumworks.json"""
+                    workscmdstr = workscmd.replace("##MSLUG##", museumslug)
+                    mwbotpath = os.getcwd() + os.path.sep + "museumworks_%s.exe"%tstr
+                    fw = open(mwbotpath, "w")
+                    fw.write(workscmdstr)
+                    fw.close()
+                    os.chmod(mwbotpath, 0o755)
+                    p = os.popen("bash %s"%mwbotpath)
+                    p.close()
+                    os.remove(mwbotpath)
+                    mvfp = open("museumworks.json", "rb")
+                    md = mvfp.read()
+                    mvfp.close()
+                    workscontent = self.__class__._decodeGzippedContent(md)
+                    #print(workscontent)
+                    os.remove("museumworks.json")
+                    worksjson = json.loads(workscontent)
+                    worksedges = worksjson['data']['partner']['filtered_artworks']['edges']
+                    #print(worksedges)
+                    for work in worksedges:
+                        piecename = work['node']['title']
+                        pieceartist = work['node']['artistNames']
+                        creationdate = work['node']['date']
+                        museum_id = lastid
+                        pieceurl = "https://artsy.net" + work['node']['href']
+                        image = work['node']['image']['url']
+                        worksql = "insert into museumpieces (piecename, creationdate, museum_id, event_id, artistname, artistbirthyear, artistdeathyear, artistnationality, medium, size, edition, signature, description, detailurl, provenance, literature, exhibited, status, image1, image2, image3, image4, priority, edited, inserted) values ('%s', '%s', '%s', '%s', '%s', '', '', '', '', '', '', '', '', '%s', '', '', '', '1', '%s', '', '', '', '1', now(), now())"%(piecename, creationdate, lastid, evid, pieceartist, pieceurl, image)
+                        self.cursor.execute(worksql)
+                    self.dbconn.commit()
+                except:
+                    print("Error in museum info extraction: %s"%sys.exc_info()[1].__str__())
+        sys.stdout.flush()
+
+
+    def getauctions(self):
+        auctioncmd = """curl 'https://metaphysics-production.artsy.net/v2' -X POST -H 'User-Agent: Reaction/Migration' -H 'Accept: */*' -H 'Accept-Language: en-US,en;q=0.5' -H 'Accept-Encoding: gzip, deflate, br' -H 'Referer: https://www.artsy.net/' -H 'Content-Type: application/json' -H 'X-TIMEZONE: Asia/Kolkata' -H 'Origin: https://www.artsy.net' -H 'Connection: keep-alive' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-site' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers' --data-raw '{"id":"AuctionArtworksRailQuery","query":"query AuctionArtworksRailQuery(\\n  $slug: String!\\n) {\\n  sale(id: $slug) {\\n    ...AuctionArtworksRail_sale\\n    id\\n  }\\n}\\n\\nfragment AuctionArtworksRail_sale on Sale {\\n  artworksConnection(first: 20) {\\n    edges {\\n      node {\\n        internalID\\n        slug\\n        ...ShelfArtwork_artwork_OqwQs\\n        id\\n      }\\n    }\\n  }\\n  internalID\\n  slug\\n  href\\n  name\\n  formattedStartDateTime\\n}\\n\\nfragment Badge_artwork on Artwork {\\n  is_biddable: isBiddable\\n  href\\n  sale {\\n    is_preview: isPreview\\n    display_timely_at: displayTimelyAt\\n    id\\n  }\\n}\\n\\nfragment Contact_artwork on Artwork {\\n  href\\n  is_inquireable: isInquireable\\n  sale {\\n    is_auction: isAuction\\n    is_live_open: isLiveOpen\\n    is_open: isOpen\\n    is_closed: isClosed\\n    id\\n  }\\n  partner(shallow: true) {\\n    type\\n    id\\n  }\\n  sale_artwork: saleArtwork {\\n    highest_bid: highestBid {\\n      display\\n    }\\n    opening_bid: openingBid {\\n      display\\n    }\\n    counts {\\n      bidder_positions: bidderPositions\\n    }\\n    id\\n  }\\n}\\n\\nfragment Details_artwork on Artwork {\\n  href\\n  title\\n  date\\n  sale_message: saleMessage\\n  cultural_maker: culturalMaker\\n  artists(shallow: true) {\\n    id\\n    href\\n    name\\n  }\\n  collecting_institution: collectingInstitution\\n  partner(shallow: true) {\\n    name\\n    href\\n    id\\n  }\\n  sale {\\n    endAt\\n    cascadingEndTimeInterval\\n    startAt\\n    is_auction: isAuction\\n    is_closed: isClosed\\n    id\\n  }\\n  sale_artwork: saleArtwork {\\n    lotLabel\\n    endAt\\n    formattedEndDateTime\\n    counts {\\n      bidder_positions: bidderPositions\\n    }\\n    highest_bid: highestBid {\\n      display\\n    }\\n    opening_bid: openingBid {\\n      display\\n    }\\n    id\\n  }\\n}\\n\\nfragment Metadata_artwork on Artwork {\\n  ...Details_artwork\\n  ...Contact_artwork\\n  href\\n}\\n\\nfragment SaveButton_artwork on Artwork {\\n  id\\n  internalID\\n  slug\\n  is_saved: isSaved\\n  title\\n}\\n\\nfragment ShelfArtwork_artwork_OqwQs on Artwork {\\n  image {\\n    resized(width: 200) {\\n      src\\n      srcSet\\n      width\\n      height\\n    }\\n    aspectRatio\\n    height\\n  }\\n  imageTitle\\n  title\\n  href\\n  is_saved: isSaved\\n  ...Metadata_artwork\\n  ...SaveButton_artwork\\n  ...Badge_artwork\\n}\\n","variables":{"slug":"dellasposa-modern-and-contemporary"}}' --output auctiondata.json"""
+        tstr = str(int(time.time()))
+        botpath = os.getcwd() + os.path.sep + "auctionbot_%s.exe"%tstr
+        fb = open(botpath, "w")
+        fb.write(auctioncmd)
+        fb.close()
+        os.chmod(botpath, 0o755)
+        p = os.popen("%s"%botpath)
+        p.close()
+        os.remove(botpath)
+        fp = open("auctiondata.json", "rb")
+        d = fp.read()
+        fp.close()
+        output = self.__class__._decodeGzippedContent(d)
+        os.remove("auctiondata.json")
+        #print(output)
+        jsondata = json.loads(output)
+        lotslist = jsondata['data']['sale']['artworksConnection']['edges']
+        lotsinfo = []
+        lotctr = 1
+        for lot in lotslist:
+            node = lot['node']
+            image = node['image']['resized']['src']
+            coverimage = image
+            title = node['title']
+            loturl = "https://artsy.net" + node['href']
+            artist = node['artists'][0]['name']
+            creationdate = node['date']
+            d = {'lottitle' : title, 'artist' : artist, 'loturl' : loturl, 'lotimage1' : image, 'lotid' : str(lotctr)}
+            lotctr += 1
+            lotsinfo.append(d)
+        auctionname = jsondata['data']['sale']['name']
+        auctionurl = "https://artsy.net" + jsondata['data']['sale']['href']
+        slug = jsondata['data']['sale']['slug']
+        auctiondate = jsondata['data']['sale']['formattedStartDateTime']
+        auctionid = jsondata['data']['sale']['id']
+        auctionsql = "insert into auctions (auctionname, auctionid, auctionhouse, auctionlocation, description, auctionurl, lotslistingurl, coverimage, auctiontype, priority, inserted, edited) values ('%s', '%s', 'Artsy', '', '', '%s', '', '%s', 'Online', '1', now(), now())"%(auctionname, slug, auctionurl, coverimage)
+        try:
+            self.cursor.execute(auctionsql)
+        except:
+            pass
+        self.dbconn.commit()
+        aucid = -1
+        self.cursor.execute("select max(id) from auctions")
+        aucrecords = self.cursor.fetchall()
+        if aucrecords.__len__() == 0:
+            print("Error occurred in fetching last inserted auctions Id")
+        else:
+            aucid = aucrecords[0][0]
+        for lot in lotsinfo:
+            lotsql = "insert into lots (lotid, lottitle, lotdescription, artistname, artistbirth, artistdeath, artistnationality, medium, size, loturl, category, auction_id, estimate, soldprice, currency, provenance, literature, exhibited, lotimage1, lotimage2, lotimage3, lotimage4, priority, inserted, edited) values ('%s', '%s', '', '%s', '', '', '', '', '', '%s', 'Painting', '%s', '', '', '', '', '', '', '%s', '', '', '', '1', now(), now())"%(lot['lotid'], lot['lottitle'], lot['artist'], lot['loturl'], aucid, lot['lotimage1'])
+            try:
+                self.cursor.execute(lotsql)
+            except:
+                continue
+        self.dbconn.commit()
+
 
 
     def logmessage(self, msg):
@@ -785,18 +1138,29 @@ if __name__ == "__main__":
         print("Insufficient arguments. Please specify the target section as the first argument.")
         sys.exit()
     inputtarget = sys.argv[1].title()
-    targetsdict = {'Galleries' : 'https://metaphysics-production.artsy.net/v2', 'Artists' : 'https://www.artsy.net/artists', 'Museums' : 'https://www.artsy.net/institutions'}
+    targetsdict = {'Galleries' : 'https://metaphysics-production.artsy.net/v2', 'Artists' : 'https://www.artsy.net/artists', 'Museums' : 'https://www.artsy.net/institutions', 'Auctions' : 'https://metaphysics-production.artsy.net/v2'}
     if inputtarget == "Galleries":
         artsybot = ArtsyBot(targetsdict['Galleries'], 'Galleries')
-        categories = artsybot.getcategories()
+        #categories = artsybot.getcategories()
+        categories2 = artsybot.getcategories2()
         #print(categories)
-        for cat in categories:
-            output = artsybot.executebot(cat)
-            artsybot.getjsondata(output)
-            artsybot.populategalleriesdata()
+        #for cat in categories:
+        for cat in categories2.keys():
+            try:
+                output = artsybot.executebot(cat)
+                artsybot.getjsondata(output)
+                artsybot.populategalleriesdata(categories2[cat])
+            except:
+                pass
     elif inputtarget == "Artists":
         artsybot = ArtsyBot(targetsdict['Artists'], 'Artists')
         artsybot.getartists()
+    elif inputtarget == "Museums":
+        artsybot = ArtsyBot(targetsdict['Museums'], 'Museums')
+        artsybot.getmuseums()
+    elif inputtarget == "Auctions":
+        artsybot = ArtsyBot(targetsdict['Auctions'], 'Auctions')
+        artsybot.getauctions()
     else:
         print("Invalid argument value: %s"%inputtarget)
     artsybot.closebot()
